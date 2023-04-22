@@ -37,6 +37,8 @@ from third_party.WideResNet_pytorch.wideresnet import WideResNet
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
+import torchvision
+from torch import nn
 from torchvision import datasets
 from torchvision import transforms
 
@@ -54,7 +56,7 @@ parser.add_argument(
     '-m',
     type=str,
     default='wrn',
-    choices=['wrn', 'allconv', 'densenet', 'resnext'],
+    choices=['wrn', 'allconv', 'densenet', 'resnext', 'ptresnet18', 'nptresnet18', 'ptconvnexttiny', 'nptconvnexttiny'],
     help='Choose architecture.')
 # Optimization options
 parser.add_argument(
@@ -338,6 +340,18 @@ def main():
     net = AllConvNet(num_classes)
   elif args.model == 'resnext':
     net = resnext29(num_classes=num_classes)
+  elif args.model == 'ptresnet18':
+    net = torchvision.models.resnet18(pretrained=True)
+    net.fc = nn.Linear(net.fc.in_features,10)
+  elif args.model == 'nptresnet18':
+    net = torchvision.models.resnet18(pretrained=False)
+    net.fc = nn.Linear(net.fc.in_features,10)
+  elif args.model == 'ptconvnexttiny':
+    net = torchvision.models.convnext_tiny(pretrained=True)
+    net.classifier[2] = nn.Linear(in_features=768,out_features=10)
+  elif args.model == 'nptconvnexttiny':
+    net = torchvision.models.convnext_tiny(pretrained=False)
+    net.classifier[2] = nn.Linear(in_features=768,out_features=10)
 
   optimizer = torch.optim.SGD(
       net.parameters(),
@@ -438,3 +452,4 @@ def main():
 
 if __name__ == '__main__':
   main()
+  
