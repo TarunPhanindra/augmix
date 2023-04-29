@@ -41,6 +41,9 @@ import torchvision
 from torch import nn
 from torchvision import datasets
 from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
+
 
 parser = argparse.ArgumentParser(
     description='Trains a CIFAR Classifier',
@@ -137,12 +140,14 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+
 CORRUPTIONS = [
     'gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur',
     'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog',
     'brightness', 'contrast', 'elastic_transform', 'pixelate',
     'jpeg_compression'
 ]
+writer = SummaryWriter('results_tensorboard/'+args.model)
 
 
 def get_lr(step, total_steps, lr_max, lr_min):
@@ -435,7 +440,11 @@ def main():
           test_loss,
           100 - 100. * test_acc,
       ))
-
+    writer.add_scalar('Train_loss', train_loss_ema, epoch+1)
+    writer.add_scalar('Test_loss', test_loss, epoch+1)
+    writer.add_scalar('Test_accuracy', test_acc, epoch+1)
+    plt.plot(train_loss_ema)
+    plt.show()
     print(
         'Epoch {0:3d} | Time {1:5d} | Train Loss {2:.4f} | Test Loss {3:.3f} |'
         ' Test Error {4:.2f}'
